@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+    nginx:
+        container_name: ${PROJECT_NAME}_nginx
+        build:
+            context: ./docker/nginx
+        ports:
+            - "80:80"
+        working_dir: /app
+        depends_on:
+            - php
+        volumes:
+            - ../:/app
+    php:
+        container_name: ${PROJECT_NAME}_php
+        build:
+            context: ./docker/php
+        ports:
+            - "9000:9000"
+        working_dir: /app
+        volumes:
+            - ../:/app
+    postgres:
+        image: postgres:14.3-alpine
+        container_name: ${PROJECT_NAME}_postgres
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
+        ports:
+            - "5432:5432"
+        volumes:
+            - ./docker/data/postgres:/var/lib/mysql/postgresql/data
