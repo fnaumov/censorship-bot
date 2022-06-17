@@ -10,7 +10,7 @@ services:
         depends_on:
             - php
         volumes:
-            - ../:/app
+            - ./:/app
     php:
         container_name: ${PROJECT_NAME}_php
         build:
@@ -19,7 +19,7 @@ services:
             - "9000:9000"
         working_dir: /app
         volumes:
-            - ../:/app
+            - ./:/app
     postgres:
         image: postgres:14.3-alpine
         container_name: ${PROJECT_NAME}_postgres
