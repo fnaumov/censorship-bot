@@ -20,6 +20,7 @@ class Configuration implements ConfigurationInterface
                     ->children()
                         ->scalarNode('bot_username')->end()
                         ->scalarNode('bot_api_key')->end()
+                        ->booleanNode('user_ban_enable')->end()
                         ->integerNode('user_ban_ttl_seconds')->end()
                     ->end()
                 ->end()

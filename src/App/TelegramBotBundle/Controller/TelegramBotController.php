@@ -20,41 +20,54 @@ use Wkhooy\ObsceneCensorRus;
 class TelegramBotController extends AbstractController
 {
     #[Route('/censorship-bot/update', methods: ['POST'])]
-    public function update(RedisClientFactory $redisFactory, Telegram $telegram, LoggerInterface $logger): Response
-    {
+    public function update(
+        RedisClientFactory $redisFactory,
+        Telegram $telegram,
+        LoggerInterface $censorshipBotLogger
+    ): Response {
         $redis = $redisFactory->createRedisClient();
 
+        $telegram->setUpdateFilter(function (Update $update, Telegram $telegram, &$reason) use ($redis) {
+            $userId = $update->getMessage()->getFrom()->getId();
+
+            if ($redis->get($this->getUserBanRedisKey($userId)) !== null) {
+                $reason = sprintf('User `%u` is blocked', $userId);
+
+                $this->deleteMessage($update);
+
+                return false;
+            }
+
+            $message = $update->getMessage()->getText();
+
+            if (!ObsceneCensorRus::isAllowed($message)) {
+                $reason = sprintf('Message is obscene - `%s`', $message);
+
+                $this->messageObsceneHandle($update, $redis, $userId);
+
+                return false;
+            }
+
+            return true;
+        });
+
         try {
-            $telegram->setUpdateFilter(function (Update $update, Telegram $telegram, &$reason) use ($redis, $logger) {
-                $userId = $update->getMessage()->getFrom()->getId();
-
-                if ($redis->get($this->getUserBanRedisKey($userId)) !== null) {
-                    $reason = sprintf('User `%u` is blocked', $userId);
-
-                    return false;
-                }
-
-                $message = $update->getMessage()->getText();
-
-                if (!ObsceneCensorRus::isAllowed($message)) {
-                    $reason = sprintf('Message is obscene - `%s`', $message);
-
-                    $this->addUserBanToRedis($redis, $userId);
-                    $this->deleteMessage($update);
-                    $this->banChatMember($update);
-
-                    return false;
-                }
-
-                return true;
-            });
-
             $telegram->handle();
         } catch (TelegramException $e) {
-            $logger->error('Exception:' . $e->getMessage());
+            $censorshipBotLogger->error('Exception:' . $e->getMessage());
         }
 
         return new Response();
+    }
+
+    private function messageObsceneHandle(Update $update, Client $redis, int $userId): void
+    {
+        if ($this->isUserBanEnable()) {
+            $this->addUserBanToRedis($redis, $userId);
+            $this->banChatMember($update);
+        }
+
+        $this->deleteMessage($update);
     }
 
     private function addUserBanToRedis(Client $redis, int $userId): void
@@ -82,6 +95,11 @@ class TelegramBotController extends AbstractController
             'user_id' => $update->getMessage()->getFrom()->getId(),
             'until_date' => (new DateTimeImmutable($modifyString))->getTimestamp(),
         ]);
+    }
+
+    private function isUserBanEnable(): bool
+    {
+        return (bool) $this->getParameter('telegram_bot.censorship.user_ban_enable');
     }
 
     private function getUserBanTtlSeconds(): int

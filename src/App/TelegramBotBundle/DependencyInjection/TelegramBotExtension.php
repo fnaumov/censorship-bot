@@ -19,6 +19,7 @@ class TelegramBotExtension extends Extension
 
         $container->setParameter('telegram_bot.censorship.bot_username', $config['censorship']['bot_username']);
         $container->setParameter('telegram_bot.censorship.bot_api_key', $config['censorship']['bot_api_key']);
+        $container->setParameter('telegram_bot.censorship.user_ban_enable', $config['censorship']['user_ban_enable']);
         $container->setParameter('telegram_bot.censorship.user_ban_ttl_seconds', $config['censorship']['user_ban_ttl_seconds']);
     }
 }

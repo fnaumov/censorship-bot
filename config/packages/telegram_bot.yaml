@@ -2,4 +2,5 @@ telegram_bot:
     censorship:
         bot_username: '%env(resolve:CENSORSHIP_BOT_USERNAME)%'
         bot_api_key: '%env(resolve:CENSORSHIP_BOT_API_KEY)%'
+        user_ban_enable: '%env(bool:CENSORSHIP_BOT_USER_BAN_ENABLE)%'
         user_ban_ttl_seconds: '%env(int:CENSORSHIP_BOT_USER_BAN_TTL_SECONDS)%'
