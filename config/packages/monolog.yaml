@@ -66,3 +66,8 @@ when@prod:
                 type: stream
                 channels: [deprecation]
                 path: php://stderr
+            censorship_bot:
+                type: stream
+                path: "%kernel.logs_dir%/censorship_bot.log"
+                level: debug
+                channels: ["censorship_bot"]
