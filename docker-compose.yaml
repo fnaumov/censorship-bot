@@ -6,6 +6,7 @@ services:
             context: ./docker/nginx
         ports:
             - "80:80"
+            - "443:443"
         working_dir: /app
         depends_on:
             - php
