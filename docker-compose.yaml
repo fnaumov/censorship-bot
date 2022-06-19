@@ -12,6 +12,7 @@ services:
             - php
         volumes:
             - ./:/app
+        restart: always
     php:
         container_name: ${PROJECT_NAME}_php
         build:
@@ -21,6 +22,8 @@ services:
         working_dir: /app
         volumes:
             - ./:/app
+        restart: always
     redis:
         container_name: ${PROJECT_NAME}_redis
         image: redis:7.0.2-alpine
+        restart: always
